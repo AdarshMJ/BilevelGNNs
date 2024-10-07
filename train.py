@@ -4,8 +4,7 @@ import random
 import time
 import numpy as np
 import torch
-from tqdm import tqdm, trange
-import proximal_gradient.proximalGradient as pg
+from tqdm import tqdm
 import torch.nn.functional as F
 from sklearn.manifold import TSNE
 import matplotlib.pyplot as plt
@@ -23,8 +22,8 @@ def set_seed(seed):
 def proximal_operator(h, gamma):
     """
     Implements the proximal operator:
-    prox_(η,γ)(h) := arg min(η(z) + 1/2γ ||z−h||^2)
-    where η(z) = I_∞[z <0] (indicator function)
+    prox_(eta,gamma)(h) := arg min(eta(z) + 1/2gamma ||z−h||^2)
+    where eta(z) = I_infty[z <0] (indicator function)
     """
     return F.relu(h)  # This effectively projects onto the non-negative orthant
 
@@ -37,6 +36,7 @@ def proximal_gradient_step(param, grad, lr, gamma):
     # Proximal operator step
     return proximal_operator(param_new, gamma)
 
+##Taken from https://github.com/roth-andreas/rank_collapse###
 def dirichlet_energy(x, edge_index, edge_weights):
     edge_difference = edge_weights * (torch.norm(x[edge_index[0]] - x[edge_index[1]], dim=1) ** 2)
     return edge_difference.sum() / 2
@@ -50,7 +50,7 @@ def plot_dirichlet_energy(epochs, dirichlet_energies, title, num_layers):
     plt.savefig(f"{title.replace(' ', '_')}_layers_{num_layers}.png")
     plt.close()
 
-def train_and_get_results(data, model, mlpmodel, p, lr, seed, splits, weight_decay=0.0, inner_lr=0.001, inner_iterations=10, epochs=100, gamma=0.1):
+def train_and_get_results(data, model, mlpmodel, p, lr, seed, splits, weight_decay, inner_lr, inner_iterations, epochs, gamma):
     
     dirichlet_energies = []
 
